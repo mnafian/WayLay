@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar
+    style="@style/ToolBarStyle.Event"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorPrimary"
+    android:minHeight="40dp">
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/btn_setting"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/ic_settings"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
+
+        <View
+            android:layout_marginLeft="5dp"
+            android:background="@android:color/white"
+            android:layout_toRightOf="@id/btn_setting"
+            android:layout_width="2dp"
+            android:layout_height="30dp"/>
+
+        <ImageView
+            android:src="@drawable/waylay"
+            android:layout_centerInParent="true"
+            android:layout_width="100dp"
+            android:layout_height="30dp" />
+
+        <View
+            android:layout_marginRight="45dp"
+            android:background="@android:color/white"
+            android:layout_alignParentRight="true"
+            android:layout_width="2dp"
+            android:layout_height="30dp"/>
+
+        <ImageView
+            android:id="@+id/btn_search"
+            android:layout_marginRight="10dp"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_magnify"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
+
+    </RelativeLayout>
+
+    </android.support.v7.widget.Toolbar>

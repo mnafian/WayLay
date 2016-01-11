@@ -25,5 +25,14 @@
         <item name="android:textSize">@dimen/event_title_text_size</item>
     </style>
 
+    <style name="customDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowAnimationStyle">@style/customDialogAnimation</item>
+    </style>
+
+    <style name="customDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/translate_left_side</item>
+        <item name="android:windowExitAnimation">@anim/translate_right_side</item>
+    </style>
+
     <dimen name="event_title_text_size">12sp</dimen>
 </resources>

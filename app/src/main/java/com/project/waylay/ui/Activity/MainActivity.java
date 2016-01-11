@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -50,8 +51,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.project.waylay.R;
 import com.project.waylay.Utilities.Util;
+import com.project.waylay.adapter.AngkotAdapter;
 import com.project.waylay.adapter.CustomAlertAdapter;
 import com.project.waylay.adapter.PlaceAutoCompleteAdapter;
+import com.trello.rxlifecycle.ActivityEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,6 +64,8 @@ import java.util.Locale;
 
 import butterknife.Bind;
 import id.zelory.benih.BenihActivity;
+import id.zelory.benih.util.BenihBus;
+import timber.log.Timber;
 
 public class MainActivity extends BenihActivity implements RoutingListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, AdapterView.OnItemClickListener {
 
@@ -73,7 +78,7 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
     @Bind(R.id.destination)
     AutoCompleteTextView destination;
     @Bind(R.id.go_button)
-    Button send;
+    ImageButton send;
     @Bind(R.id.cardview)
     CardView cardview;
     @Bind(R.id.btn_search)
@@ -97,10 +102,12 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
     private String Address[] = {"Jalan Soekarno- Hatta, Kecamatan Lowokwaru, Jawa Timur", "Jalan Trunojoyo, Kauman, Jawa Timur", "Jalan Candi Panggung, Mojolangu, Jawa Timur", "Jalan Veteran, Penanggungan, Jawa Timur", "Ketawanggede, Jawa Timur", "Arjosari, Jawa Timur"};
     private String PlaceId[] = {"ChIJhyGmegqCeC4Ro_gxtbnvYQA", "ChIJVVVVlSMo1i0R6NpohjVm75M", "ChIJ0d0W2OEp1i0RYwNO8o6XhHg", "ChIJE6T4s3iCeC4RsnxECir578c", "ChIJUX8903iCeC4RwQ603uAxv8A", "ChIJgeIuA44p1i0Ry4yUk8yZKME"};
     private int IconDrawable[] = {R.drawable.ic_briefcase, R.drawable.ic_train, R.drawable.ic_shopping, R.drawable.ic_shopping, R.drawable.ic_school, R.drawable.ic_bus};
+    private String ListAngkot[] = {"AL", "ADL", "LG", "ABG"};
     private ArrayList<String> array_sort;
 
     private AlertDialog myalertDialog = null;
     private AlertDialog myalertDialogDetail = null;
+    private AlertDialog myalertDialogAngkot = null;
 
     @Override
     protected int getActivityView() {
@@ -109,6 +116,11 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
 
     @Override
     protected void onViewReady(Bundle savedInstanceState) {
+        BenihBus.pluck()
+                .receive()
+                .compose(bindUntilEvent(ActivityEvent.DESTROY))
+                .subscribe(o -> Timber.d(o.toString()), throwable -> Timber.d(throwable.getMessage()));
+
         polylines = new ArrayList<>();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Places.GEO_DATA_API)
@@ -219,6 +231,42 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
                     }
                 });
 
+        locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER,
+                3000, 0, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        start = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                        List<Address> addresses = null;
+                        try {
+                            addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            String cityName = addresses.get(0).getAddressLine(0);
+                            String stateName = addresses.get(0).getAddressLine(1);
+                            String countryName = addresses.get(0).getAddressLine(2);
+
+                            locationName.setText(cityName + " ," + stateName + " ," + countryName);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            locationName.setText("Unable to get current location");
+                        }
+                    }
+
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+
+                    }
+                });
 
 
         /*
@@ -296,7 +344,7 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
 
     private void showDialogList() {
         closeView();
-        AlertDialog.Builder myDialog = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder myDialog = new AlertDialog.Builder(MainActivity.this, R.style.customDialog);
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.way_dialog_view, null);
 
@@ -312,6 +360,7 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
         listview.setOnItemClickListener(this);
         myalertDialog = myDialog.create();
         WindowManager.LayoutParams wmlp = myalertDialog.getWindow().getAttributes();
+        myalertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         wmlp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
         float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 280, getResources().getDisplayMetrics());
@@ -331,12 +380,11 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
 
         placeName.setText(tempat);
         placeAlamat.setText(alamat);
-        placeAngkot.setOnClickListener(view -> goAngkot(endPos));
+        placeAngkot.setOnClickListener(view -> showListAngkot(endPos));
 
         myDialog.setView(dialogView);
         myalertDialogDetail = myDialog.create();
         WindowManager.LayoutParams wmlp = myalertDialogDetail.getWindow().getAttributes();
-
         wmlp.gravity = Gravity.BOTTOM;
         myalertDialogDetail.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         myalertDialogDetail.show();
@@ -349,10 +397,36 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
         myalertDialogDetail.dismiss();
     }
 
+    private void showListAngkot(LatLng locationL){
+        AlertDialog.Builder myDialog = new AlertDialog.Builder(MainActivity.this, R.style.customDialog);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.way_dialog_angkot, null);
+
+        final ListView listview = (ListView) dialogView.findViewById(R.id.way_list_angkot);
+
+        myDialog.setView(dialogView);
+        array_sort = new ArrayList<>(Arrays.asList(ListAngkot));
+        AngkotAdapter arrayAdapter = new AngkotAdapter(MainActivity.this, array_sort);
+
+        listview.setAdapter(arrayAdapter);
+        listview.setOnItemClickListener((parent, view, position, id) -> goAngkot(locationL));
+
+        myalertDialogAngkot = myDialog.create();
+        WindowManager.LayoutParams wmlp = myalertDialogAngkot.getWindow().getAttributes();
+        myalertDialogAngkot.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        wmlp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 200, getResources().getDisplayMetrics());
+        wmlp.width = (int) px;
+        myalertDialogAngkot.show();
+    }
+
     private void goAngkot(LatLng endPos) {
-            end = endPos;
-            progressDialog = ProgressDialog.show(this, "Tunggu Sebentar",
+        progressDialog = ProgressDialog.show(this, "Tunggu Sebentar",
                     "Mengambil Rute.", true);
+        end = endPos;
+        try{
+
             Routing routing = new Routing.Builder()
                     .travelMode(AbstractRouting.TravelMode.DRIVING)
                     .withListener(this)
@@ -360,6 +434,13 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
                     .waypoints(start, end)
                     .build();
             routing.execute();
+
+            if (myalertDialogAngkot!=null){
+                myalertDialogAngkot.dismiss();
+            }
+        }catch (Exception e){
+            //TODO ex
+        }
     }
 
     private void closeView() {
@@ -387,15 +468,7 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
             }
         } else {
             closeView();
-            progressDialog = ProgressDialog.show(this, "Tunggu Sebentar",
-                    "Mengambil Rute.", true);
-            Routing routing = new Routing.Builder()
-                    .travelMode(AbstractRouting.TravelMode.DRIVING)
-                    .withListener(this)
-                    .alternativeRoutes(true)
-                    .waypoints(start, end)
-                    .build();
-            routing.execute();
+            showDialogDestination(end, destination.getText().toString(), "");
         }
     }
 
@@ -409,6 +482,10 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
 
         if (myalertDialogDetail!=null) {
             myalertDialogDetail.dismiss();
+        }
+
+        if (myalertDialogAngkot!=null) {
+            myalertDialogAngkot.dismiss();
         }
         progressDialog.dismiss();
         Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
@@ -427,6 +504,10 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
 
         if (myalertDialogDetail!=null) {
             myalertDialogDetail.dismiss();
+        }
+
+        if (myalertDialogAngkot!=null) {
+            myalertDialogAngkot.dismiss();
         }
         progressDialog.dismiss();
         map.clear();
@@ -461,15 +542,14 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
         // Start marker
         MarkerOptions options = new MarkerOptions();
         options.position(start);
-        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker_featured));
+        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_location_putih));
         map.addMarker(options);
 
         // End marker
         options = new MarkerOptions();
         options.position(end);
-        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker_featured));
+        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_location));
         map.addMarker(options);
-
     }
 
     @Override

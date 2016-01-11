@@ -70,6 +70,8 @@
                     android:textSize="18sp" />
 
                 <Button
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/roundcorner"
                     android:layout_gravity="center_horizontal"
                     android:id="@+id/button_angkot"
                     android:layout_width="180sp"

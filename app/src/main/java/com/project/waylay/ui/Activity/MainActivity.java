@@ -69,10 +69,12 @@ import timber.log.Timber;
 
 public class MainActivity extends BenihActivity implements RoutingListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, AdapterView.OnItemClickListener {
 
+    private static final LatLngBounds BOUNDS_MALANG = new LatLngBounds(new LatLng(-7.965354, 112.632842),
+            new LatLng(-7.931692, 112.637821));
     protected GoogleMap map;
     protected LatLng start;
     protected LatLng end;
-
+    protected GoogleApiClient mGoogleApiClient;
     @Bind(R.id.start)
     TextView starting;
     @Bind(R.id.destination)
@@ -87,17 +89,11 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
     ImageView close;
     @Bind(R.id.txt_location)
     TextView locationName;
-
     private String LOG_TAG = "MyActivity";
-    protected GoogleApiClient mGoogleApiClient;
     private PlaceAutoCompleteAdapter mAdapter;
     private ProgressDialog progressDialog;
     private ArrayList<Polyline> polylines;
     private int[] colors = new int[]{R.color.colorPrimaryDark, R.color.colorPrimary, R.color.colorPrimary, R.color.colorAccent, R.color.primary_dark_material_light};
-
-    private static final LatLngBounds BOUNDS_MALANG = new LatLngBounds(new LatLng(-7.965354, 112.632842),
-            new LatLng(-7.931692, 112.637821));
-
     private String TitleName[] = {"Inagata Technosmith", "Stasiun Malang", "Inspired 27 Garage", "Malang Town Square", "Brawijaya University", "Terminal Arjosari"};
     private String Address[] = {"Jalan Soekarno- Hatta, Kecamatan Lowokwaru, Jawa Timur", "Jalan Trunojoyo, Kauman, Jawa Timur", "Jalan Candi Panggung, Mojolangu, Jawa Timur", "Jalan Veteran, Penanggungan, Jawa Timur", "Ketawanggede, Jawa Timur", "Arjosari, Jawa Timur"};
     private String PlaceId[] = {"ChIJhyGmegqCeC4Ro_gxtbnvYQA", "ChIJVVVVlSMo1i0R6NpohjVm75M", "ChIJ0d0W2OEp1i0RYwNO8o6XhHg", "ChIJE6T4s3iCeC4RsnxECir578c", "ChIJUX8903iCeC4RwQ603uAxv8A", "ChIJgeIuA44p1i0Ry4yUk8yZKME"};
@@ -116,6 +112,7 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
 
     @Override
     protected void onViewReady(Bundle savedInstanceState) {
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         BenihBus.pluck()
                 .receive()
                 .compose(bindUntilEvent(ActivityEvent.DESTROY))
@@ -425,21 +422,25 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
         progressDialog = ProgressDialog.show(this, "Tunggu Sebentar",
                     "Mengambil Rute.", true);
         end = endPos;
-        try{
+        if (start != null) {
+            try {
 
-            Routing routing = new Routing.Builder()
-                    .travelMode(AbstractRouting.TravelMode.DRIVING)
-                    .withListener(this)
-                    .alternativeRoutes(true)
-                    .waypoints(start, end)
-                    .build();
-            routing.execute();
+                Routing routing = new Routing.Builder()
+                        .travelMode(AbstractRouting.TravelMode.DRIVING)
+                        .withListener(this)
+                        .alternativeRoutes(true)
+                        .waypoints(start, end)
+                        .build();
+                routing.execute();
 
-            if (myalertDialogAngkot!=null){
-                myalertDialogAngkot.dismiss();
+                if (myalertDialogAngkot != null) {
+                    myalertDialogAngkot.dismiss();
+                }
+            } catch (Exception e) {
+                //TODO ex
             }
-        }catch (Exception e){
-            //TODO ex
+        } else {
+            Toast.makeText(this, "Cannot get current location", Toast.LENGTH_LONG).show();
         }
     }
 

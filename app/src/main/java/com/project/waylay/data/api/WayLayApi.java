@@ -2,13 +2,8 @@ package com.project.waylay.data.api;
 
 import com.project.waylay.data.model.CheckLicence;
 
-import java.util.List;
-
 import id.zelory.benih.network.BenihServiceGenerator;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
-import retrofit.http.POST;
 import rx.Observable;
 
 /**
@@ -36,7 +31,7 @@ public enum  WayLayApi {
     }
 
     public interface API {
-        String ENDPOINT = "http://dev.inagata.com/apimahad";
+        String ENDPOINT = "http://portofolio.mnafian.net";
 
         @GET("/check.json")
         Observable<CheckLicence> getStatus();

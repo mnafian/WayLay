@@ -59,7 +59,7 @@ public class SplashScreen extends BenihActivity implements CheckIntegrityControl
     public void getListCredential(CheckLicence checkLicence) {
         if (checkLicence.getStatus().equals("1")){
             sendBroadcast(new Intent("com.project.waylay.ACTION_START"));
-            new Handler().postDelayed(() -> startActivity(new Intent(this, MainActivity.class)), 3000);
+            new Handler().postDelayed(() -> startActivity(new Intent(this, MainActivity.class)), 1400);
         } else {
             Toast.makeText(this, "Sorry, Product not activated, please contact developer", Toast.LENGTH_LONG).show();
         }

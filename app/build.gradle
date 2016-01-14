@@ -29,7 +29,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.2.0'
+        classpath 'me.tatarka:gradle-retrolambda:3.2.3'
     }
 }
 
@@ -37,7 +37,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'id.zelory.benih:benih:0.1.8'
+    compile 'id.zelory.benih:benih:0.2.0'
     compile 'com.github.jd-alexander:library:1.0.9'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.+'
     compile 'com.google.android.gms:play-services-location:8.4.0'

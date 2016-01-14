@@ -63,7 +63,7 @@ import java.util.List;
 import java.util.Locale;
 
 import butterknife.Bind;
-import id.zelory.benih.BenihActivity;
+import id.zelory.benih.ui.BenihActivity;
 import id.zelory.benih.util.BenihBus;
 import timber.log.Timber;
 
@@ -106,7 +106,7 @@ public class MainActivity extends BenihActivity implements RoutingListener, Goog
     private AlertDialog myalertDialogAngkot = null;
 
     @Override
-    protected int getActivityView() {
+    protected int getResourceLayout() {
         return R.layout.way_main;
     }
 

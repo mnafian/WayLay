@@ -9,7 +9,7 @@ import com.project.waylay.R;
 import com.project.waylay.controller.CheckIntegrityController;
 import com.project.waylay.data.model.CheckLicence;
 
-import id.zelory.benih.BenihActivity;
+import id.zelory.benih.ui.BenihActivity;
 
 /**
  * Created on : January 07, 2016
@@ -24,7 +24,7 @@ public class SplashScreen extends BenihActivity implements CheckIntegrityControl
     private CheckIntegrityController checkIntegrityController;
 
     @Override
-    protected int getActivityView() {
+    protected int getResourceLayout() {
         return R.layout.way_splashscreen;
     }
 
@@ -63,10 +63,5 @@ public class SplashScreen extends BenihActivity implements CheckIntegrityControl
         } else {
             Toast.makeText(this, "Sorry, Product not activated, please contact developer", Toast.LENGTH_LONG).show();
         }
-    }
-
-    @Override
-    public void showError(Throwable throwable) {
-
     }
 }
